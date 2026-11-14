@@ -1,0 +1,16 @@
+build/
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.lot
+*.lof
+*.tdo
+.DS_Store

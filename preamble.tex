@@ -1,0 +1,43 @@
+\usepackage[paperwidth=170mm,paperheight=240mm,inner=22mm,outer=18mm,top=22mm,bottom=24mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm,bm}
+\usepackage{booktabs,multirow,tabularx,makecell}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+\graphicspath{{figures/}}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\sisetup{group-separator={,},round-mode=places,round-precision=3}
+\usepackage{algorithm,algpseudocode}
+\usepackage[backend=biber,style=numeric-comp,sorting=none,maxbibnames=10,giveninits=true,backref=false]{biblatex}
+\addbibresource{bib/own.bib}
+\addbibresource{bib/background.bib}
+\addbibresource{bib/vision.bib}
+\addbibresource{bib/spectral.bib}
+\addbibresource{bib/temporal.bib}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{csquotes}
+\usepackage[disable]{todonotes}
+\setuptodonotes{color=orange!30}
+\newcommand{\gap}[1]{\todo[inline,color=red!20]{\textbf{GAP:} #1}}
+\newcommand{\exper}[2]{\todo[inline,color=blue!15]{\textbf{EXP #1:} #2}}
+\newcommand{\source}[1]{\todo[inline,color=green!15]{\textbf{Source:} #1}}
+\newcommand{\basedon}[1]{%
+  \begin{center}\begin{minipage}{0.9\linewidth}\small\itshape
+  This chapter is based on:\\ #1\end{minipage}\end{center}\bigskip}
+\newenvironment{bridge}{\par\medskip\noindent\textbf{Towards the next chapter.}\ }{\par}
+\newcommand{\cost}{\mathcal{C}}          % cost of one inference / one field
+\newcommand{\acc}{\mathcal{A}}           % task accuracy (AP, OA, macro-F1)
+\newcommand{\budget}{B}                  % acquisition / band budget
+\newcommand{\bands}{\mathcal{S}}         % selected spectral band set
+\newcommand{\dates}{\mathcal{T}}         % selected acquisition dates
+\newcommand{\crops}{\mathcal{R}}         % crop regions (Ch.~4)
+\newcommand{\ie}{i.e.,\ }
+\newcommand{\eg}{e.g.,\ }

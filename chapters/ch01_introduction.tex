@@ -1,0 +1,206 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+\section{Motivation: the cost of deep learning in sensing systems}
+\label{sec:intro:motivation}
+
+Deep neural networks have become the default tool for perception tasks such as
+object detection in video and land-cover classification from satellite imagery.
+Their accuracy comes at a cost that is paid at every inference: the input must
+be acquired, moved, stored and processed, and the network must be executed on
+some hardware platform. In deployed sensing systems, a road-side traffic
+camera, a drone, or a country-scale crop-mapping service, this cost is repeated
+for every frame, every field and every season.
+
+Most work on efficient deep learning targets the \emph{execution} of a given
+network: faster software frameworks, compilers, reduced numerical precision,
+pruning and specialised hardware. These techniques are essential, but they share
+an implicit assumption: that the full input must be processed. This thesis
+questions that assumption. In many sensing applications the input is highly
+redundant with respect to the task, and the cheapest input is the one that is
+never acquired.
+
+\section{The big picture}
+\label{sec:intro:bigpicture}
+
+\paragraph{Where the cost goes.}
+A deployed sensing system runs a pipeline (\cref{fig:intro:bigpicture}): a
+sensor or an archive delivers the input, the input is acquired and transferred,
+stored and pre-processed, and finally a deep neural network turns it into a
+prediction. Only the last stage is what is usually called inference, but every
+stage costs time, energy, bandwidth or money, and every stage is paid again for
+each frame, field and season. The balance between the stages depends on scale.
+For a single camera attached to an embedded GPU, the network execution
+dominates. For a crop map of a whole country, the network is cheap compared with
+retrieving, storing and pre-processing tens of multispectral acquisitions per
+field. As sensing systems scale, the dominant cost moves from the processor to
+the data.
+
+\paragraph{Thesis statement.}
+This thesis argues that the most effective way to make deep learning inference
+in sensing systems efficient is to process less input, not only to process it
+faster: the part of the input a model actually needs can be identified
+cheaply, before or during inference, and the rest need not be acquired, stored
+or processed. The question therefore shifts from \emph{how} to execute a
+network efficiently to \emph{what} part of the input needs to be processed at
+all.
+
+\begin{figure}[t]
+  \centering
+  \input{figures/ch1/big_picture}
+  \caption{The big picture of this thesis. A sensing pipeline pays a data cost
+  (acquire, transfer, store, pre-process) and a compute cost (inference).
+  \Cref{ch:how} reduces the compute cost by choosing how a fixed network is
+  executed. \Cref{ch:where,ch:which,ch:when,ch:joint} add an input-selection
+  stage that decides what enters the pipeline: which image regions, spectral
+  bands and acquisitions. The selection is fixed at design time from training
+  data or model attributions, or adapted at run time from the model's own
+  output (dashed).}
+  \label{fig:intro:bigpicture}
+\end{figure}
+
+\paragraph{Three axes of input redundancy.}
+A sensing input has a spatial, a spectral and a temporal extent, and each is
+redundant with respect to the task:
+\begin{itemize}
+  \item \textbf{Where} (space): most pixels of a traffic-camera frame contain no
+  object, and objects move little between consecutive frames (\cref{ch:where}).
+  \item \textbf{Which} (spectrum): neighbouring spectral bands of a
+  multispectral image carry overlapping information, and a crop classifier needs
+  only a few of them (\cref{ch:which}).
+  \item \textbf{When} (time): after the discriminative part of the growing season
+  has been observed, further acquisitions add little (\cref{ch:when}).
+\end{itemize}
+The axes are not independent: the bands a classifier needs may depend on the
+dates it sees. \Cref{ch:joint} therefore selects bands and dates jointly, under
+one data-volume budget.
+
+\paragraph{One recipe, three axes.}
+The chapters on input reduction follow the same recipe.
+\begin{enumerate}
+  \item \emph{Bound the redundancy.} Measure how much of the input can be removed
+  at all, with a reference that is too expensive to deploy: the full-frame
+  detector, an exhaustive search over band subsets, or a label-aware oracle over
+  acquisitions.
+  \item \emph{Find a cheap selector.} Replace the reference with a signal that is
+  available at little cost: detections from previous frames, feature
+  attributions of a trained model, statistics of the training set, or the
+  classifier's own confidence. A selector is only useful if it costs much less
+  than the input it saves.
+  \item \emph{Test whether it transfers.} Check the selection on data it was not
+  derived from: other datasets, regions, architectures and years.
+\end{enumerate}
+The selectors differ in when they decide. A \emph{static} selection is fixed at
+design time and is the same for every input, such as a band set or an
+acquisition calendar; it is simple to deploy and lets the data provider deliver
+only what is needed. An \emph{adaptive} selection is made at run time for each
+input, such as crop regions from prior detections or a stopping rule; it can
+save more, but it must be computed online and its decisions depend on the
+model being right. A recurring finding of this thesis is that good static
+selections are hard to beat (\cref{ch:when}).
+
+\paragraph{The thesis at a glance.}
+\Cref{tab:intro:glance} summarises the chapters along these lines.
+
+\begin{table}[t]
+  \centering
+  \footnotesize
+  \caption{The thesis at a glance: what each chapter reduces, how the selection
+  is made, and the main result.}
+  \label{tab:intro:glance}
+  \begin{tabularx}{\textwidth}{@{}l l X X X@{}}
+    \toprule
+    Ch. & Axis & Reduced & Selection signal (when) & Main result \\
+    \midrule
+    \ref{ch:how}   & How       & execution cost      & framework, platform, precision (design time)
+                   & no single framework is best; latency and throughput optima differ \\
+    \ref{ch:where} & Where     & image regions       & prior detections (run time, per frame)
+                   & up to $1.7\times$ faster detection at maintained accuracy \\
+    \ref{ch:which} & Which     & spectral bands      & model attributions (design time, per region)
+                   & 3 bands retain 99.1\% of 10-band performance \\
+    \ref{ch:when}  & When      & acquisitions        & searched calendar (design time); stopping head (run time)
+                   & within 1 point of the full series with a fraction of the acquisitions \\
+    \ref{ch:joint} & Which+When & band--date pairs   & joint search under a data-volume budget (design time)
+                   & first results \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Scope.}
+The thesis spans two domains on purpose. Object detection in video on embedded
+hardware (\cref{ch:how,ch:where}) is the setting where compute dominates;
+crop classification from Sentinel-2 time series (\cref{ch:which,ch:when,ch:joint})
+is the setting where data dominates. Seeing the same question in both shows that
+input reduction is not a trick of one application. The thesis studies inference
+only: models are trained once on full inputs, or on random subsets of them, and
+the savings are measured at deployment.
+
+\section{Research questions}
+\label{sec:intro:rq}
+
+\begin{description}
+  \item[RQ1] How strongly do the choices of deep learning software framework and
+  hardware platform affect inference latency and throughput, and is there a
+  choice that is best across deployment scenarios? (\cref{ch:how})
+  \item[RQ2] Can prior object locations in video be exploited to reduce the
+  computation of a single-shot object detector while maintaining its accuracy?
+  (\cref{ch:where})
+  \item[RQ3] Can model feature attributions identify a minimal set of spectral
+  bands for crop classification, close to the optimum found by exhaustive
+  search, at a fraction of its cost? (\cref{ch:which})
+  \item[RQ4] How few Sentinel-2 acquisitions does each field need for
+  near-full-series accuracy, and can they be selected, and the retrieval
+  stopped, without labels at inference time? (\cref{ch:when})
+  \item[RQ5] Do spectral and temporal input reductions compose, and how should
+  they be selected jointly under a common data-volume budget? (\cref{ch:joint})
+\end{description}
+
+\section{Contributions}
+\label{sec:intro:contrib}
+
+\begin{enumerate}
+  \item A systematic evaluation of inference performance across deep learning
+  frameworks, hardware platforms, batch sizes and precisions, showing that no
+  single framework is optimal and that the optimum differs for latency and
+  throughput (\cref{ch:how}).
+  \item A crop-based detection method that turns prior object locations into
+  low-resolution crop regions, with a crop-size limit as an explicit
+  speed/accuracy knob; up to $1.7\times$ (UA-DETRAC) and $1.6\times$ (UAVDT)
+  speed-up over SSD-ML (\cref{ch:where}).
+  \item An attribution-ensemble method for automatic spectral band selection,
+  validated against 3{,}675 exhaustive trainings across six Turkish regions
+  and three architectures; three bands retain 99.1\% of 10-band performance
+  while reducing storage by 70--90\% (\cref{ch:which}).
+  \item A retrieval-efficient acquisition framework, consisting of an any-subset
+  classifier, a per-region searched acquisition calendar, and a label-free
+  learned stopping head, that reaches near-full-series accuracy with a small
+  fraction of the acquisitions, and composes with early-classification methods
+  (\cref{ch:when}).
+  \item Evidence that label-aware oracles, commonly used as teachers for
+  acquisition policies, mostly reflect selection bias, which explains why
+  learned per-field policies fail to beat good static schedules
+  (\cref{ch:when}).
+  \item A joint spectral--temporal selection under a common data-volume cost,
+  showing how the two reductions compose and where they fail to transfer
+  (\cref{ch:joint}).
+\end{enumerate}
+
+\section{Thesis outline}
+\label{sec:intro:outline}
+
+\Cref{ch:background} introduces the background and a common cost--accuracy
+framework that is used throughout the thesis. \Cref{ch:how} studies how the
+execution of a fixed network depends on the software and hardware, and argues
+that larger gains require reducing the input. \Cref{ch:where,ch:which,ch:when}
+reduce the input along space, spectrum and time, respectively.
+\Cref{ch:joint} combines the spectral and temporal reductions. \Cref{ch:conclusion}
+answers the research questions and discusses future directions, including
+on-board processing of satellite data, which brings the embedded perspective of
+the first chapters back to the remote-sensing setting of the last.
+
+\section{Publications}
+\label{sec:intro:pubs}
+The chapters of this thesis are based on the following publications:
+\cref{ch:how}~\cite{ulker2020reviewing}, \cref{ch:where}~\cite{ulker2022accelerating},
+\cref{ch:which}~\cite{ulker2026bandselection}, and
+\cref{ch:when,ch:joint}~\cite{ulker2027acquisitions}.

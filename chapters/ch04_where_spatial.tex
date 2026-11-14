@@ -1,0 +1,33 @@
+\chapter{Where: Exploiting Prior Object Locations in Video}
+\label{ch:where}
+
+\basedon{\fullcite{ulker2022accelerating}}
+
+\section{Introduction}
+
+\section{Related work}
+
+\section{Crop-based detection with prior object locations}
+\subsection{Generating crop regions from prior locations}
+\subsection{Lower-resolution crop detectors}
+\subsection{Crop size limit as a speed/accuracy knob}
+\subsection{Training with data augmentation}
+
+\section{Experimental setup}
+
+\section{Results}
+\subsection{Execution time and accuracy}
+\subsection{Effect of training and inference crop sizes}
+\subsection{Pareto-efficient operating points}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+\begin{bridge}
+This chapter reduced the input in space, using information that was available
+for free from earlier frames. The same principle applies to satellite imagery,
+but the dominant cost there is not the detector's computation: it is the volume
+of multispectral data that must be retrieved and stored for every field. The
+next chapter reduces this volume along the spectral axis.
+\end{bridge}

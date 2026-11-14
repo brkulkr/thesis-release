@@ -1,0 +1,36 @@
+\begin{tikzpicture}[
+  font=\small,
+  stage/.style={draw, rounded corners=2pt, align=center, text width=19mm,
+                minimum height=11mm, fill=black!5},
+  box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
+              inner sep=4pt},
+  flow/.style={-{Stealth[length=2mm]}, thick},
+  ctrl/.style={-{Stealth[length=1.8mm]}},
+  fb/.style={-{Stealth[length=1.8mm]}, densely dashed},
+  node distance=6mm and 5mm]
+
+  \node[stage] (sel) {Input\\selection};
+  \node[stage, right=of sel] (acq) {Acquire \&\\transfer};
+  \node[stage, right=of acq] (sto) {Store \&\\pre-process};
+  \node[stage, right=of sto] (inf) {DNN\\inference};
+  \node[align=center, font=\footnotesize, left=4mm of sel] (src) {Sensor\\or\\archive};
+  \draw[flow] (src) -- (sel);
+  \draw[flow] (sel) -- (acq);
+  \draw[flow] (acq) -- (sto);
+  \draw[flow] (sto) -- (inf);
+
+  \draw[fb] (inf.north) -- ++(0,7mm) -| (sel.north)
+    node[pos=0.25, above, font=\footnotesize]
+    {feedback at run time: prior detections (Ch.~4), confidence (Ch.~6)};
+
+  \node[box, anchor=north, text width=63mm] (what)
+    at ($(acq.south)+(0,-13mm)$)
+    {\textbf{What} to process: reduces the data cost\\[2pt]
+     \textbf{Where}: image regions (Ch.~4)\quad \textbf{Which}: bands (Ch.~5)\\
+     \textbf{When}: acquisitions (Ch.~6)\quad \textbf{Which+When} (Ch.~7)};
+  \node[box, anchor=north, text width=19mm] (how)
+    at ($(inf.south)+(0,-13mm)$)
+    {\textbf{How} to execute: reduces the compute cost\\(Ch.~3)};
+  \draw[ctrl] (what.north -| sel.south) -- (sel.south);
+  \draw[ctrl] (how.north) -- (inf.south);
+\end{tikzpicture}
